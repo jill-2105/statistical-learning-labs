@@ -1,9 +1,9 @@
-# =======================
+#===================================================================================================================================
 # Assignment 3 - Question 2
-# Logistic Regression with Validation Set Approach
+# Question-5.5 Page No. 233
+# In previous question, we used logistic regression to predict the probability of default using income and balance on the Default data set. We will now estimate the test error of this logistic regression model using the validation set approach
 # Default Dataset (ISLR)
-# =======================git st
-
+#===================================================================================================================================
 
 # --- Imports ---
 import os
@@ -17,38 +17,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
 
-
 # --- Ensure plots folder exists ---
 os.makedirs("plots", exist_ok=True)
 
-
-# --- Step (a) Load Default dataset with official-URL-first + local fallback ---
+# --- Step (a) Load Default dataset (local) ---
 def load_default_dataset():
     data_dir = pathlib.Path("data")
     data_dir.mkdir(exist_ok=True)
     local_csv = data_dir / "Default.csv"
-
-    official = "https://www.statlearning.com/s/Default.csv"
-    mirror   = "https://raw.githubusercontent.com/JWarmenhoven/ISLR-python/master/Notebooks/Data/Default.csv"
-
     if not local_csv.exists():
-        try:
-            print("Attempting download from official ISLR URL ...")
-            urllib.request.urlretrieve(official, local_csv.as_posix())
-            print("Downloaded from official ISLR URL.")
-        except Exception as e_off:
-            print(f"Official URL failed ({e_off}). Trying mirror ...")
-            try:
-                urllib.request.urlretrieve(mirror, local_csv.as_posix())
-                print("Downloaded from public mirror (identical schema).")
-            except Exception as e_mir:
-                raise RuntimeError(
-                    "Failed to retrieve Default.csv from both sources.\n"
-                    f"Official error: {e_off}\nMirror error: {e_mir}"
-                )
-    else:
-        print("Using local cached data/Default.csv")
-
+        raise FileNotFoundError(
+            "data/Default.csv not found. Place the ISLR Default.csv at: " + local_csv.as_posix()
+        )
     df = pd.read_csv(local_csv)
     # Sanity checks and binary encodings
     required_cols = {"default", "student", "balance", "income"}
@@ -56,7 +36,6 @@ def load_default_dataset():
     df["default_binary"] = (df["default"] == "Yes").astype(int)
     df["student_binary"] = (df["student"] == "Yes").astype(int)
     return df
-
 
 Default = load_default_dataset()
 
@@ -66,7 +45,6 @@ print(f"\nDataset shape: {Default.shape}")
 print(f"\nColumn names: {Default.columns.tolist()}")
 print("\nDefault rate (Yes/No proportion):")
 print(Default["default"].value_counts(normalize=True))
-
 
 # --- Step (b) Logistic regression: income + balance (single split) ---
 print("\n--- Single Split Validation (income + balance) ---")
@@ -87,7 +65,6 @@ print(f"Validation Set Accuracy: {val_acc:.4f}")
 print(f"Validation Set Error:    {val_error:.4f}")
 print("Confusion Matrix (income + balance):")
 print(cm)
-
 
 # --- Step (c) Repeat with 3 different random splits ---
 print("\n--- Multiple Random Splits (income + balance) ---")
@@ -111,7 +88,6 @@ print(f"Mean Validation Error:    {np.mean(errors):.4f}")
 print(f"Std Deviation (Error):    {np.std(errors):.4f}")
 print(f"Error Range:              [{np.min(errors):.4f}, {np.max(errors):.4f}]")
 
-
 # --- Step (d) Add student dummy variable ---
 print("\n--- Logistic Regression with Student Variable ---")
 X_with_student = Default[["income", "balance", "student_binary"]]
@@ -133,7 +109,6 @@ print(f"\nMean Validation Accuracy (with student): {np.mean(accuracies_with_stud
 print(f"Mean Validation Error (with student):    {np.mean(errors_with_student):.4f}")
 print(f"Std Deviation (Error, with student):     {np.std(errors_with_student):.4f}")
 print(f"Error Range (with student):              [{np.min(errors_with_student):.4f}, {np.max(errors_with_student):.4f}]")
-
 
 # --- Summary Comparison ---
 print("\n" + "="*50)
@@ -176,4 +151,5 @@ plt.grid(axis='y', alpha=0.3)
 plt.savefig("plots/validation_error_comparison.png", dpi=300, bbox_inches='tight')
 plt.show()
 
-print("\n✅ Plot saved to plots/validation_error_comparison.png")
+print("\nPlots saved successfully:")
+print(" - plots/validation_error_comparison.png")
